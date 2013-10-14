@@ -24,9 +24,9 @@ def menu(stdscr, message, items, height=0, width=0, cancel=True):
 
   lines = message.split('\n')
   if not height: 
-    height = padheight+len(lines)+3
+    height = min([40, padheight+len(lines)+3])
   if not width:
-    width = padwidth + 2
+    width = min([30, padwidth + 2])
 
   ypos = my/2 - height/2
   xpos = mx/2 - width/2

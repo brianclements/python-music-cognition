@@ -57,6 +57,7 @@ class Symbol(object):
     # beats should be filled with actual onsets, and filled with onsets estimated from those
     # as soon as two onsets are defined, upper symbols only add their own onsets
     division = len(Symbols)
+    if division == 1: return Symbols[0]
     positions = []
     onsets = [None for x in range(division)]
     complexpositions = []
@@ -135,6 +136,14 @@ class Symbol(object):
     R = Symbol(features, length=length, children=children, depth=depth, beats=beats, onsets=onsets, divisions=divisions, perf_beats=perf_beats, perf_on=perf_on)
     return R 
 
+  def fix_depth(self, new_depth=-1):
+    if not self.children: return
+    if new_depth == -1:
+      new_depth = self.depth
+    self.depth = new_depth
+    for S in self.children:
+      S.fix_depth(new_depth=new_depth-1)
+
   def downbeat(self):
     return self.beats[0]
 
@@ -176,9 +185,9 @@ class Symbol(object):
   def latex(self, showOnsets=False, showPerfOnsets=False, showRatios=False, showFeatures=False):
     return latex.latexify(self, showOnsets=showOnsets, showPerfOnsets=showPerfOnsets, showRatios=showRatios)
 
-  def view(self, scale=False, showOnsets=False, showPerfOnsets=False, showRatios=False, showFeatures=False, quiet=True):
+  def view(self, scale=False, showOnsets=False, showPerfOnsets=False, showRatios=False, showFeatures=False, quiet=True, showDepth=False):
     """Generate a LaTeX tree using qtree.sty, convert to pdf with pdflatex and view using Evince. Remove the files afterwards."""
-    latex.view_symbols([self], scale=scale, showOnsets=showOnsets, showPerfOnsets=showPerfOnsets, showRatios=showRatios, showFeatures=showFeatures, quiet=quiet)
+    latex.view_symbols([self], scale=scale, showOnsets=showOnsets, showPerfOnsets=showPerfOnsets, showRatios=showRatios, showFeatures=showFeatures, quiet=quiet, showDepth=showDepth)
 
   def score(self, barlevel=0, annotation=None, pitches=None):
     """Transcribe the symbol, save as MusicXML, convert to pdf using MuseScore and view using Evince. Remove the file afterwards."""

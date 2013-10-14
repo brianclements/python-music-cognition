@@ -47,7 +47,10 @@ def run(stdscr):
     if c == ord('p') and mode == ENDED:
       if parses == None:
         cgui.alert(stdscr, 'Parsing', block=False)
-        parser = StochasticParser(annotations.corpus('explicitswing'))
+        corpus = annotations.corpus('explicitswing')
+        rhythmmodel = pcfg.train(corpus)
+        expressionmodel = expression.additive_noise(0.1)
+        parser = StochasticParser(corpus, expressionModel=expressionmodel, rhythmModel=rhythmmodel)
         parses = parser.parse_onsets(onsets)
       if len(parses) > 0:
         choice = cgui.menu(stdscr, '{0} parses'.format(len(parses)), ['View analysis', 'View score', 'View all'])
@@ -57,7 +60,7 @@ def run(stdscr):
           parse.view()
         elif choice == 1:
           barlevel = cgui.prompt(stdscr, 'Barlevel?')
-          parse = parses[cgui.menu(stdscrt, 'parse?', ['Prior: {0}, likelihood {1}, posterior {2}. Depth {3}'.format(p.prior, p.likelihood, p.posterior, p.depth) for p in parses])]
+          parse = parses[cgui.menu(stdscr, 'parse?', ['Prior: {0}, likelihood {1}, posterior {2}. Depth {3}'.format(p.prior, p.likelihood, p.posterior, p.depth) for p in parses])]
           parse.score(barlevel=int(barlevel))
         elif choice == 2:
           latex.view_symbols(parses, scale=False)

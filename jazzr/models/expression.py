@@ -1,5 +1,4 @@
 import math
-from jazzr.tools import latex
 from jazzr.annotation import Annotation
 from jazzr.models import pcfg
 
@@ -46,7 +45,9 @@ def std(list):
   std /= float(len(list))
   return std
 
-def observations(S, downbeat=None, est_nextDownbeat=None, nextDownbeat=None, level=0, parent=None, performance=False, verbose=False):
+def observations(S, downbeat=None, est_nextDownbeat=None, nextDownbeat=None, level=0, parent=None, performance=False, verbose=False, noMaxDepth=False):
+  """Estimate the expression(up/downbeat) ratio for each node in tree S. 
+  Return a list of feature vector/expression ratio tuples"""
   division = len(S.children)
   beats = S.beats[:]
   onsets = []
@@ -83,7 +84,8 @@ def observations(S, downbeat=None, est_nextDownbeat=None, nextDownbeat=None, lev
   for child, beat, i in zip(S.children, beats, range(0, division)):
     #if beat != None and i != 0:
     if S.onsets[i] != None and beat != None and i != 0:
-      obs.append((features(S), expressionRatio(downbeat, nextDownbeat, onsets[i], i, division)))
+      obs.append((features(S, noMaxDepth=noMaxDepth), expressionRatio(downbeat, nextDownbeat, onsets[i], i, division)))
+      S.expressionRatio = expressionRatio(downbeat, nextDownbeat, onsets[i], i, division)
       if obs[-1][1] > abs(math.log(2)) and verbose:
         parentbeats = parent.beats
         temp_onsets = []
@@ -123,9 +125,9 @@ def expressionRatio(downbeat, nextDownbeat, onset, position, division):
         ((nextDownbeat - onset) / float(division - position))
   return math.log(ratio)
 
-def features(S):
+def features(S, noMaxDepth=False):
   depth = S.depth
-  if depth > 4:
+  if depth > 4 and not noMaxDepth:
     depth = 4
   #rule = pcfg.ruleType(S)
   return (depth, len(S.children))
